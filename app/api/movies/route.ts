@@ -173,22 +173,87 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const category = searchParams.get('category');
     const query = searchParams.get('q');
+    const isKids = searchParams.get('kids') === 'true';
+
+    // Wholesome Kid-Friendly Fallback Movies if isKids is true (No Cartoon Network stuff)
+    const KIDS_FALLBACK_MOVIES = [
+      {
+        id: 'f9hG_bM6rI8',
+        title: 'As Aventuras de Paddington',
+        description: 'Um jovem urso peruano viaja para Londres em busca de um lar. Encontrando-se perdido na estação de Paddington, ele conhece a amável família Brown.',
+        thumbnail: 'https://picsum.photos/seed/paddington/400/225',
+        backdrop: 'https://picsum.photos/seed/paddington/1280/720',
+        category: 'Infantil',
+        duration: '1h 35min',
+        rating: 'L',
+        year: '2020',
+        match: '99%'
+      },
+      {
+        id: 'y7xF_rK2gH9',
+        title: 'O Pequeno Príncipe',
+        description: 'Uma garota obstinada faz amizade com um velho aviador excêntrico, que lhe apresenta o mundo mágico do Pequeno Príncipe.',
+        thumbnail: 'https://picsum.photos/seed/prince/400/225',
+        backdrop: 'https://picsum.photos/seed/prince/1280/720',
+        category: 'Infantil',
+        duration: '1h 48min',
+        rating: 'L',
+        year: '2021',
+        match: '97%'
+      },
+      {
+        id: 'Lh9FvR9n7Xw',
+        title: 'A Menina e o Leão',
+        description: 'Uma menina de dez anos desenvolve uma amizade extraordinária com um filhote de leão branco em uma fazenda na África do Sul.',
+        thumbnail: 'https://picsum.photos/seed/lion/400/225',
+        backdrop: 'https://picsum.photos/seed/lion/1280/720',
+        category: 'Infantil',
+        duration: '1h 38min',
+        rating: '10',
+        year: '2022',
+        match: '95%'
+      },
+      {
+        id: 'C_y2F8p_XWn',
+        title: 'O Caminho dos Sonhos',
+        description: 'Um garoto descobre um portal secreto em seu quintal que o leva a uma terra mágica onde a natureza conversa e os animais realizam desejos.',
+        thumbnail: 'https://picsum.photos/seed/dreams/400/225',
+        backdrop: 'https://picsum.photos/seed/dreams/1280/720',
+        category: 'Infantil',
+        duration: '1h 30min',
+        rating: 'L',
+        year: '2023',
+        match: '93%'
+      },
+      {
+        id: 'T5r_Y6j8Hk0',
+        title: 'A Lenda do Tesouro Perdido',
+        description: 'Um jovem explorador e seus melhores amigos decifram um mapa misterioso para salvar uma floresta sagrada e descobrir um antigo santuário dourado.',
+        thumbnail: 'https://picsum.photos/seed/treasure/400/225',
+        backdrop: 'https://picsum.photos/seed/treasure/1280/720',
+        category: 'Infantil',
+        duration: '1h 42min',
+        rating: 'L',
+        year: '2024',
+        match: '98%'
+      }
+    ];
 
     // Default return lists
-    let movies = [...FALLBACK_MOVIES];
+    let movies = isKids ? [...KIDS_FALLBACK_MOVIES] : [...FALLBACK_MOVIES];
 
     // If a search query is passed or we want live YouTube results
     if (YOUTUBE_API_KEY && YOUTUBE_API_KEY !== 'MY_YOUTUBE_API_KEY') {
       try {
         // Build search query based on request
-        let searchQuery = 'NetMovies completo dublado';
+        let searchQuery = isKids ? 'NetMovies infantil livre completo dublado' : 'NetMovies completo dublado';
         if (query) {
-          searchQuery = `NetMovies ${query}`;
+          searchQuery = isKids ? `NetMovies infantil ${query}` : `NetMovies ${query}`;
         } else if (category && category !== 'Séries' && category !== 'Minha Lista') {
           searchQuery = `NetMovies ${category}`;
         }
 
-        const ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=15&q=${encodeURIComponent(searchQuery)}&type=video&key=${YOUTUBE_API_KEY}`;
+        const ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=25&q=${encodeURIComponent(searchQuery)}&type=video&key=${YOUTUBE_API_KEY}`;
         const response = await fetch(ytUrl);
         
         if (response.ok) {
@@ -215,10 +280,10 @@ export async function GET(req: NextRequest) {
               if (!titleClean) titleClean = "Filme Incrível";
 
               // Map genres cleanly
-              let movieGenre = 'Ação';
+              let movieGenre = isKids ? 'Infantil' : 'Ação';
               if (category) {
                 movieGenre = category;
-              } else {
+              } else if (!isKids) {
                 const lowerTitle = titleRaw.toLowerCase();
                 if (lowerTitle.includes('comédia') || lowerTitle.includes('engraçado')) movieGenre = 'Comédia';
                 else if (lowerTitle.includes('terror') || lowerTitle.includes('horror') || lowerTitle.includes('medo') || lowerTitle.includes('suspense')) movieGenre = 'Terror & Suspense';
@@ -228,8 +293,8 @@ export async function GET(req: NextRequest) {
               }
 
               // Build high fidelity details
-              const ratings = ['L', '10', '12', '14', '16', '18'];
-              const rating = ratings[Math.floor(Math.sin(index) * 3) + 3] || '14';
+              const ratings = isKids ? ['L', '10'] : ['L', '10', '12', '14', '16', '18'];
+              const rating = ratings[Math.floor(Math.sin(index) * ratings.length)] || 'L';
               const durationHours = Math.floor(1 + Math.sin(index + 1) * 0.5) || 1;
               const durationMins = Math.floor(Math.abs(Math.cos(index + 2)) * 59) || 30;
               const durationStr = `${durationHours}h ${durationMins}min`;
@@ -253,7 +318,8 @@ export async function GET(req: NextRequest) {
 
             // Merge dynamic videos from YouTube with fallback videos (prevent duplicates)
             const combined = [...ytMovies];
-            FALLBACK_MOVIES.forEach(fm => {
+            const activeFallbacks = isKids ? KIDS_FALLBACK_MOVIES : FALLBACK_MOVIES;
+            activeFallbacks.forEach(fm => {
               if (!combined.some(c => c.id === fm.id)) {
                 combined.push(fm);
               }
@@ -265,6 +331,32 @@ export async function GET(req: NextRequest) {
         console.error('Failed to fetch from YouTube API:', err);
       }
     }
+
+    // MANDATORY FILTER: Remove all Cartoon Network and NetMovies Kids typical cartoons (like Gumball, Ben 10, Teen Titans, etc.)
+    const blacklist = [
+      'cartoon network', 'cartoonnetwork', 'gumball', 'ben 10', 'jovens titas', 'jovens titãs', 'teen titans',
+      'clarencio', 'clarêncio', 'hora de aventura', 'apenas um show', 'steven universo', 'powerpuff',
+      'meninas superpoderosas', 'cartoon network portugal', 'cn portugal', 'desenho animado cartoon network',
+      'cartoon_network', 'netmovies kids', 'netmovieskids', 'net movies kids', 'desenhos animados',
+      'desenho animado', 'dora a aventureira', 'galinha pintadinha', 'patrulha canina', 'looney tunes',
+      'mickey', 'disney channel', 'peppa', 'pj masks', 'bob esponja'
+    ];
+
+    movies = movies.filter(movie => {
+      const titleLower = movie.title.toLowerCase();
+      const descLower = movie.description.toLowerCase();
+      const originalTitleLower = (movie as any).originalTitle?.toLowerCase() || '';
+      const categoryLower = movie.category.toLowerCase();
+      
+      const isBlacklisted = blacklist.some(term => 
+        titleLower.includes(term) || 
+        descLower.includes(term) || 
+        originalTitleLower.includes(term) ||
+        categoryLower.includes(term)
+      );
+      
+      return !isBlacklisted;
+    });
 
     // Filter by category if requested
     if (category) {
@@ -286,6 +378,15 @@ export async function GET(req: NextRequest) {
         m.description.toLowerCase().includes(qLower) ||
         m.category.toLowerCase().includes(qLower)
       );
+    }
+
+    // If isKids is true, enforce wholesome attributes on all returned movies
+    if (isKids) {
+      movies = movies.map(m => ({
+        ...m,
+        rating: 'L',
+        category: 'Infantil'
+      }));
     }
 
     return NextResponse.json(movies);

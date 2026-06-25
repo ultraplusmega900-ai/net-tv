@@ -1,6 +1,6 @@
 {
-  "name": "Netflix Replica",
-  "description": "A high-fidelity Netflix clone featuring Landing Page, Login, Sign Up, and Movie/Series browsing with a YouTube player pulling from NetMovies.",
+  "name": "NetMovies",
+  "description": "Uma réplica de alta fidelidade do NetMovies com Landing Page, Login, Cadastro, perfis personalizados (incluindo perfil Kids seguro e Patrono) e player do YouTube integrado.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

@@ -57,7 +57,7 @@ export default function NetflixReplica() {
   const [view, setView] = useState<'landing' | 'login' | 'profiles' | 'browse'>('landing');
   const [isSignUp, setIsSignUp] = useState(false);
   const [user, setUser] = useState<any>(null);
-  const [selectedProfile, setSelectedProfile] = useState<{name: string, avatar: string} | null>(null);
+  const [selectedProfile, setSelectedProfile] = useState<{name: string, avatar: string, label?: string} | null>(null);
   const [userEmail, setUserEmail] = useState('');
   
   // Login Form States
@@ -82,20 +82,60 @@ export default function NetflixReplica() {
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
   const [selectedMovieForDetail, setSelectedMovieForDetail] = useState<Movie | null>(null);
 
+  // Kids Trivia Game State
+  const [kidsQuizIndex, setKidsQuizIndex] = useState(0);
+  const [kidsStars, setKidsStars] = useState(0);
+  const [kidsFeedback, setKidsFeedback] = useState<'correct' | 'incorrect' | null>(null);
+  const [kidsUnlockedBadges, setKidsUnlockedBadges] = useState<string[]>([]);
+
+  // Kids Trivia Questions
+  const kidsTriviaQuestions = [
+    {
+      question: "Qual o brinquedo favorito de Andy em Toy Story?",
+      options: ["Woody", "Buzz Lightyear", "Rex", "Sr. Cabeça de Batata"],
+      answer: "Woody",
+      rewardBadge: "🏆 Xerife dos Brinquedos"
+    },
+    {
+      question: "Quem vive em um abacaxi e mora no fundo do mar?",
+      options: ["Patrick Estrela", "Bob Esponja", "Lula Mulusco", "Sandy"],
+      answer: "Bob Esponja",
+      rewardBadge: "🍍 Mestre do Hambúrguer"
+    },
+    {
+      question: "De qual cor é o simpático ogro Shrek?",
+      options: ["Azul", "Vermelho", "Verde", "Roxo"],
+      answer: "Verde",
+      rewardBadge: "🟢 Herói do Pântano"
+    },
+    {
+      question: "Qual o animal de estimação de Jasmine em Aladdin?",
+      options: ["Macaco Abu", "Tigre Rajah", "Papagaio Iago", "Tapete Mágico"],
+      answer: "Tigre Rajah",
+      rewardBadge: "🐯 Guardião do Palácio"
+    },
+    {
+      question: "Quem canta a música 'Let It Go' em Frozen?",
+      options: ["Anna", "Elsa", "Olaf", "Kristoff"],
+      answer: "Elsa",
+      rewardBadge: "❄️ Mestre do Gelo"
+    }
+  ];
+
   // Profile List
   const profilesList = [
-    { name: 'Pai', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80', color: 'border-blue-600 bg-blue-900/30' },
-    { name: 'Mãe', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80', color: 'border-pink-600 bg-pink-900/30' },
-    { name: 'Filho', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80', color: 'border-green-600 bg-green-900/30' },
-    { name: 'Infantil', avatar: 'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?auto=format&fit=crop&w=150&q=80', color: 'border-yellow-500 bg-yellow-900/30' }
+    { name: 'Patrono', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80', color: 'border-red-600 bg-red-900/30', label: 'Patrono' },
+    { name: 'Mãe', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80', color: 'border-pink-600 bg-pink-900/30', label: 'Adulto' },
+    { name: 'Filho', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80', color: 'border-green-600 bg-green-900/30', label: 'Adulto' },
+    { name: 'Kids', avatar: '/kids_avatar.jpg', color: 'border-yellow-500 bg-yellow-900/30', label: 'Kids' }
   ];
 
   // FAQ list for Landing Page
   const faqList = [
-    { q: 'O que é a Netflix?', a: 'A Netflix é um serviço de streaming que oferece uma ampla variedade de séries de TV, filmes, minisséries e muito mais em milhares de aparelhos conectados à internet. Tudo dublado em português ou com legendas, direto para a sua tela.' },
-    { q: 'Onde posso assistir aos filmes?', a: 'Assista onde quiser, quando quiser. Faça login com sua conta da Netflix para começar a assistir no computador ou em qualquer aparelho conectado à internet, como Smart TVs, smartphones, tablets ou videogames.' },
-    { q: 'Como funciona o NetMovies neste replica?', a: 'Este replica integra o catálogo de filmes completos e dublados do famoso canal NetMovies no YouTube, utilizando a chave de API oficial de forma segura para transmitir os vídeos em alta fidelidade!' },
-    { q: 'Como posso cancelar?', a: 'A Netflix é flexível. Não há contratos de fidelidade nem multas. Você pode cancelar a sua conta online com apenas dois cliques quando quiser.' }
+    { q: 'O que é o NetMovies?', a: 'O NetMovies é um serviço de streaming de alta qualidade que oferece uma ampla variedade de filmes completos, minisséries e muito mais em milhares de aparelhos conectados à internet. Tudo em português, direto para a sua tela.' },
+    { q: 'Onde posso assistir aos filmes?', a: 'Assista onde quiser, quando quiser. Faça login com sua conta do NetMovies para começar a assistir no computador ou em qualquer aparelho conectado à internet, como Smart TVs, smartphones, tablets ou videogames.' },
+    { q: 'Como funciona o NetMovies neste replica?', a: 'Este replica integra o catálogo de filmes completos e dublados do canal oficial NetMovies no YouTube, de forma segura, transmitindo os vídeos em alta fidelidade com controle parental e perfis personalizados!' },
+    { q: 'Como posso cancelar?', a: 'O NetMovies é flexível. Não há contratos de fidelidade nem multas. Você pode cancelar a sua conta online com apenas dois cliques quando quiser.' }
   ];
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
@@ -129,7 +169,9 @@ export default function NetflixReplica() {
     async function fetchMovies() {
       setMoviesLoading(true);
       try {
-        const res = await fetch('/api/movies');
+        const isKids = selectedProfile?.name === 'Kids';
+        const url = isKids ? '/api/movies?kids=true' : '/api/movies';
+        const res = await fetch(url);
         if (res.ok) {
           const data = await res.json();
           setMovies(data);
@@ -143,7 +185,7 @@ export default function NetflixReplica() {
       }
     }
     fetchMovies();
-  }, []);
+  }, [selectedProfile]);
 
   // Initialize Auth listeners and LocalStorage cache on Mount
   useEffect(() => {
@@ -365,7 +407,7 @@ export default function NetflixReplica() {
   };
 
   // Handle Profile Click
-  const handleProfileSelect = (profile: {name: string, avatar: string}) => {
+  const handleProfileSelect = (profile: {name: string, avatar: string, label?: string}) => {
     setSelectedProfile(profile);
     setView('browse');
   };
@@ -737,13 +779,14 @@ export default function NetflixReplica() {
 
       {/* 3. PROFILE SELECTION VIEW */}
       {view === 'profiles' && (
-        <div id="profiles-container" className="min-h-screen w-full flex flex-col justify-center items-center bg-[#141414] px-4">
+        <div id="profiles-container" className="min-h-screen w-full flex flex-col justify-center items-center bg-[#141414] px-4 animate-fade-in">
           <motion.div 
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             className="text-center max-w-3xl"
           >
-            <h1 className="text-3xl md:text-5xl font-semibold tracking-wide mb-8">Quem está assistindo?</h1>
+            <h1 className="text-3xl md:text-5xl font-semibold tracking-wide mb-2 text-white">Quem está assistindo?</h1>
+            <p className="text-gray-400 text-sm mb-10">Selecione seu perfil personalizado para carregar seu catálogo do NetMovies</p>
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-10 mt-10">
               {profilesList.map((profile, idx) => (
@@ -751,9 +794,9 @@ export default function NetflixReplica() {
                   key={idx}
                   whileHover={{ scale: 1.05 }}
                   onClick={() => handleProfileSelect(profile)}
-                  className="flex flex-col items-center group cursor-pointer"
+                  className="flex flex-col items-center group cursor-pointer relative"
                 >
-                  <div className={`relative w-24 h-24 md:w-32 md:h-32 rounded-md overflow-hidden border-2 border-transparent group-hover:border-white transition-all duration-200 shadow-md ${profile.color}`}>
+                  <div className={`relative w-24 h-24 md:w-32 md:h-32 rounded-md overflow-hidden border-2 border-transparent group-hover:border-white transition-all duration-200 shadow-lg ${profile.color}`}>
                     <Image 
                       src={profile.avatar} 
                       alt={profile.name}
@@ -762,16 +805,31 @@ export default function NetflixReplica() {
                       className="object-cover"
                       referrerPolicy="no-referrer"
                     />
+                    
+                    {/* Visual label ribbon directly on the avatar */}
+                    <div className={`absolute top-2 left-2 px-1.5 py-0.5 text-[8px] md:text-[9px] font-extrabold rounded uppercase tracking-wider shadow-md ${
+                      profile.label === 'Patrono' ? 'bg-red-600 text-white border border-red-500' :
+                      profile.label === 'Kids' ? 'bg-yellow-400 text-neutral-900 font-black' : 'bg-zinc-800 text-zinc-300'
+                    }`}>
+                      {profile.label}
+                    </div>
                   </div>
-                  <span className="mt-4 text-gray-400 group-hover:text-white text-base md:text-lg font-medium transition-colors">
+                  
+                  {/* Name of profile is clearly displayed underneath */}
+                  <span className="mt-4 text-gray-300 group-hover:text-white text-base md:text-lg font-bold tracking-wide transition-colors">
                     {profile.name}
+                  </span>
+                  
+                  {/* Secondary descriptive name label */}
+                  <span className="text-[10px] text-gray-500 group-hover:text-gray-300 font-mono mt-0.5 uppercase tracking-widest">
+                    {profile.label === 'Patrono' ? 'Dono da Conta' : profile.label === 'Kids' ? 'Área Segura' : 'Perfil Adulto'}
                   </span>
                 </motion.div>
               ))}
             </div>
 
             <button 
-              onClick={() => handleProfileSelect({name: userEmail.split('@')[0], avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'})}
+              onClick={() => handleProfileSelect({name: 'Patrono', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80', label: 'Patrono'})}
               className="mt-16 border border-neutral-500 text-neutral-400 hover:text-white hover:border-white px-6 py-2 rounded text-sm uppercase tracking-widest transition duration-200 cursor-pointer"
             >
               Gerenciar Perfis
@@ -783,7 +841,7 @@ export default function NetflixReplica() {
 
       {/* 4. MAIN BROWSE DASHBOARD */}
       {view === 'browse' && selectedProfile && (
-        <div id="browse-container" className="min-h-screen w-full flex flex-col relative pb-20">
+        <div id="browse-container" className={`min-h-screen w-full flex flex-col relative pb-20 transition-all duration-700 ${selectedProfile.name === 'Kids' ? 'bg-[#0f172a]' : 'bg-[#141414]'}`}>
           
           {/* Main Navigation Header */}
           <header 
@@ -791,9 +849,9 @@ export default function NetflixReplica() {
             className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-14 py-3 transition-colors duration-500 ${scrolled ? 'bg-[#141414]/95 shadow-xl border-b border-white/5' : 'bg-gradient-to-b from-black/80 to-transparent'}`}
           >
             <div className="flex items-center gap-6 md:gap-12">
-              {/* Logo */}
+              {/* Logo - Renamed to NETMOVIES */}
               <div onClick={() => setView('profiles')} className="flex items-center cursor-pointer select-none">
-                <span className="text-2xl md:text-3xl font-black text-[#E50914] tracking-tighter">NETFLIX</span>
+                <span className="text-2xl md:text-3xl font-black text-[#E50914] tracking-tighter">NETMOVIES</span>
                 <span className="ml-1 text-[8px] bg-red-600 px-1 rounded font-mono font-semibold tracking-widest text-white">REPLICA</span>
               </div>
 
@@ -854,7 +912,15 @@ export default function NetflixReplica() {
                       referrerPolicy="no-referrer"
                     />
                   </div>
-                  <span className="hidden sm:inline text-sm font-semibold">{selectedProfile.name}</span>
+                  {/* Name of selected profile is always visible */}
+                  <span className="text-sm font-bold text-white tracking-wide flex items-center gap-1">
+                    {selectedProfile.name}
+                    {selectedProfile.label && (
+                      <span className={`text-[9px] px-1 py-0.2 rounded font-mono ${selectedProfile.name === 'Kids' ? 'bg-yellow-400 text-black' : 'bg-red-600 text-white'}`}>
+                        {selectedProfile.label}
+                      </span>
+                    )}
+                  </span>
                   <ChevronDown className="w-4 h-4 text-gray-400 group-hover:rotate-180 transition-transform duration-200" />
                 </div>
 
@@ -876,12 +942,32 @@ export default function NetflixReplica() {
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-2 text-sm text-[#E50914] hover:bg-neutral-800 flex items-center gap-2 cursor-pointer"
                   >
-                    <LogOut className="w-4 h-4" /> Sair do Netflix
+                    <LogOut className="w-4 h-4" /> Sair do NetMovies
                   </button>
                 </div>
               </div>
             </div>
           </header>
+
+          {/* Active Profile Greeting Bar */}
+          <div className={`mt-16 py-3.5 px-6 md:px-14 flex flex-col sm:flex-row items-center justify-between text-xs tracking-wider uppercase font-semibold text-neutral-400 border-b relative z-30 shadow-md ${
+            selectedProfile.name === 'Kids' 
+              ? 'bg-gradient-to-r from-amber-950/20 via-yellow-950/20 to-orange-950/20 text-yellow-300 border-yellow-500/20' 
+              : 'bg-[#181818]/90 text-neutral-300 border-neutral-800/80'
+          }`}>
+            <span className="flex items-center gap-2 mb-2 sm:mb-0">
+              <span className={`inline-block w-2.5 h-2.5 rounded-full ${selectedProfile.name === 'Kids' ? 'bg-yellow-400 animate-pulse' : 'bg-red-600'}`} />
+              Assistindo agora como: <strong className="text-white ml-1 text-sm normal-case">{selectedProfile.name}</strong> 
+              {selectedProfile.label && (
+                <span className={`ml-2 px-1.5 py-0.5 text-[9px] rounded font-bold uppercase ${selectedProfile.name === 'Kids' ? 'bg-yellow-400 text-neutral-950 font-black' : 'bg-red-600 text-white'}`}>
+                  {selectedProfile.label}
+                </span>
+              )}
+            </span>
+            <span className="text-neutral-500 normal-case text-xs">
+              {selectedProfile.name === 'Kids' ? '✨ Canal Kids Seguro e Sem Desenhos Animados CN!' : '🍿 Sessão Ativa • Catálogo Completo NetMovies'}
+            </span>
+          </div>
 
           {/* MAIN PAGE BODY */}
           {moviesLoading ? (
@@ -952,6 +1038,229 @@ export default function NetflixReplica() {
                       }
                     </div>
                   )}
+                </div>
+              ) : selectedProfile.name === 'Kids' ? (
+                // ----------------------------------------------------
+                // KIDS SAFETHEME & CONCURSOS VIEW
+                // ----------------------------------------------------
+                <div className="pt-6 animate-fade-in pb-20 select-none">
+                  
+                  {/* Kids Playful Banner */}
+                  <div className="relative mx-6 md:mx-14 mt-6 rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-500 text-white p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8">
+                    <div className="space-y-4 text-center md:text-left max-w-xl">
+                      <div className="inline-block bg-yellow-400 text-neutral-900 text-xs font-black uppercase px-3 py-1 rounded-full shadow-md tracking-wider">
+                        ✨ Espaço Kids Seguro ✨
+                      </div>
+                      <h1 className="text-3xl md:text-5xl font-black tracking-tight text-white drop-shadow">
+                        O Mundo Mágico do NetMovies! 🌟
+                      </h1>
+                      <p className="text-sm md:text-base font-medium text-yellow-100 leading-relaxed">
+                        Aqui você só encontra filmes incríveis, aventuras mágicas e histórias divertidas, 100% livres de desenhos animados do Cartoon Network ou de comerciais!
+                      </p>
+                      
+                      <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-2">
+                        <span className="bg-white/20 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5">
+                          ⭐ {kidsStars} Estrelas
+                        </span>
+                        <span className="bg-white/20 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5">
+                          🏅 {kidsUnlockedBadges.length} Conquistas
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {/* Floating cartoon popcorn bucket illustration container */}
+                    <div className="relative w-40 h-40">
+                      <Image 
+                        src="/kids_avatar.jpg" 
+                        alt="Kids Popcorn Mascot"
+                        fill
+                        className="object-cover rounded-full border-4 border-yellow-400 shadow-2xl"
+                        referrerPolicy="no-referrer"
+                      />
+                    </div>
+                  </div>
+
+                  {/* CONCURSOS COLORIDOS SECTION */}
+                  <section className="mx-6 md:mx-14 mt-10 bg-gradient-to-br from-indigo-950 via-purple-900 to-pink-900 rounded-3xl p-6 md:p-8 border-4 border-yellow-400 shadow-xl relative overflow-hidden">
+                    {/* Colorful playful background balloons */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-pink-500/20 rounded-full blur-2xl pointer-events-none"></div>
+                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-yellow-400/10 rounded-full blur-xl pointer-events-none"></div>
+                    
+                    <div className="relative z-10 flex flex-col md:flex-row gap-8 items-stretch justify-between">
+                      {/* Left Block: Quiz Introduction */}
+                      <div className="flex flex-col justify-between max-w-sm">
+                        <div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-2xl">🎉</span>
+                            <h2 className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-pink-400 to-yellow-300 animate-pulse uppercase tracking-wide">
+                              Concursos Coloridos!
+                            </h2>
+                          </div>
+                          <p className="text-xs md:text-sm text-purple-200 leading-relaxed font-medium">
+                            Responda a perguntas divertidas de cinema, acumule Estrelas e ganhe Badges Digitais de Super Assistente do NetMovies!
+                          </p>
+                        </div>
+
+                        {/* Badges Earned Container */}
+                        <div className="mt-6 pt-4 border-t border-purple-800">
+                          <p className="text-xs font-bold text-yellow-300 uppercase mb-2">Suas Conquistas:</p>
+                          {kidsUnlockedBadges.length === 0 ? (
+                            <div className="text-xs text-purple-400 italic font-mono">Nenhum concurso vencido ainda. Acerte abaixo!</div>
+                          ) : (
+                            <div className="flex flex-wrap gap-2">
+                              {kidsUnlockedBadges.map((badge, bIdx) => (
+                                <span key={bIdx} className="bg-pink-600/80 text-white font-bold text-[11px] px-2.5 py-1 rounded-full shadow-md">
+                                  {badge}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Right Block: Active Quiz Question Container */}
+                      <div className="flex-grow bg-black/40 border border-purple-500/30 rounded-2xl p-5 flex flex-col justify-between">
+                        {kidsQuizIndex < kidsTriviaQuestions.length ? (
+                          <>
+                            <div>
+                              <div className="flex justify-between items-center text-[10px] text-purple-300 font-bold tracking-widest uppercase mb-3">
+                                <span>Pergunta {kidsQuizIndex + 1} de {kidsTriviaQuestions.length}</span>
+                                <span className="text-yellow-300">+10 Estrelas</span>
+                              </div>
+                              <h3 className="text-base md:text-lg font-bold text-white leading-snug mb-5">
+                                {kidsTriviaQuestions[kidsQuizIndex].question}
+                              </h3>
+                              
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {kidsTriviaQuestions[kidsQuizIndex].options.map((opt, oIdx) => (
+                                  <button
+                                    key={oIdx}
+                                    onClick={() => {
+                                      if (kidsFeedback) return; // Prevent double answers
+                                      const isCorrect = opt === kidsTriviaQuestions[kidsQuizIndex].answer;
+                                      if (isCorrect) {
+                                        setKidsStars(prev => prev + 10);
+                                        setKidsFeedback('correct');
+                                        const badge = kidsTriviaQuestions[kidsQuizIndex].rewardBadge;
+                                        if (!kidsUnlockedBadges.includes(badge)) {
+                                          setKidsUnlockedBadges(prev => [...prev, badge]);
+                                        }
+                                      } else {
+                                        setKidsFeedback('incorrect');
+                                      }
+                                    }}
+                                    className="bg-purple-950/40 hover:bg-purple-800/60 border border-purple-700/50 text-white font-semibold text-sm rounded-xl p-3 text-left transition hover:scale-[1.02] cursor-pointer"
+                                  >
+                                    🎈 {opt}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Feedback Block */}
+                            <div className="mt-4 min-h-12 flex items-center justify-between">
+                              {kidsFeedback === 'correct' && (
+                                <div className="flex items-center gap-2 text-green-400 font-bold text-sm bg-green-950/40 px-3 py-1.5 rounded-lg border border-green-700/30">
+                                  <span>🌟 Parabéns! Resposta Correta! (+10 Estrelas)</span>
+                                </div>
+                              )}
+                              {kidsFeedback === 'incorrect' && (
+                                <div className="flex items-center gap-2 text-red-400 font-bold text-sm bg-red-950/40 px-3 py-1.5 rounded-lg border border-red-700/30">
+                                  <span>😢 Ops, tente outra vez! Você consegue!</span>
+                                </div>
+                              )}
+
+                              {kidsFeedback && (
+                                <button
+                                  onClick={() => {
+                                    setKidsFeedback(null);
+                                    setKidsQuizIndex(prev => prev + 1);
+                                  }}
+                                  className="ml-auto bg-yellow-400 hover:bg-yellow-500 text-neutral-900 font-black px-4 py-1.5 rounded-full text-xs uppercase tracking-wider transition-all duration-200"
+                                >
+                                  Próxima Pergunta ➔
+                                </button>
+                              )}
+                            </div>
+                          </>
+                        ) : (
+                          <div className="text-center py-6 space-y-4">
+                            <span className="text-4xl animate-bounce inline-block">👑</span>
+                            <h3 className="text-lg font-black text-yellow-300 uppercase">Você é um Super Campeão do NetMovies Kids!</h3>
+                            <p className="text-xs text-purple-200 max-w-md mx-auto">
+                              Completou todo o Concurso Colorido do dia com sucesso! Totalizando <strong className="text-white text-base">{kidsStars} Estrelas</strong>. Continue assistindo aos seus filmes favoritos!
+                            </p>
+                            <button
+                              onClick={() => {
+                                setKidsQuizIndex(0);
+                                setKidsStars(0);
+                                setKidsUnlockedBadges([]);
+                                setKidsFeedback(null);
+                              }}
+                              className="bg-yellow-400 hover:bg-yellow-500 text-neutral-900 font-black px-5 py-2 rounded-full text-xs uppercase tracking-wider transition cursor-pointer"
+                            >
+                              Refazer Concurso 🔄
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </section>
+
+                  {/* CURATED KIDS MOVIES ROWS */}
+                  <div className="px-6 md:px-14 mt-12 space-y-12">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h2 className="text-xl md:text-3xl font-black text-white tracking-tight flex items-center gap-2">
+                          🍿 Cine Pipoca - Filmes Completos para Crianças
+                        </h2>
+                        <span className="text-xs text-yellow-300 font-bold uppercase tracking-wider bg-yellow-950/40 border border-yellow-500/30 px-3 py-1 rounded-full">
+                          Livre para Todas as Idades
+                        </span>
+                      </div>
+                      
+                      {movies.length === 0 ? (
+                        <p className="text-gray-400 text-sm">Nenhum filme infantil carregado no momento.</p>
+                      ) : (
+                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 pt-2">
+                          {movies.map((movie) => (
+                            <div 
+                              key={movie.id}
+                              onClick={() => setSelectedMovieForDetail(movie)}
+                              className="bg-[#1e293b]/50 border-2 border-slate-700 hover:border-yellow-400 rounded-2xl overflow-hidden cursor-pointer group transition duration-300 hover:scale-[1.03] shadow-lg"
+                            >
+                              <div className="relative aspect-video">
+                                <Image 
+                                  src={movie.thumbnail} 
+                                  alt={movie.title}
+                                  fill
+                                  sizes="300px"
+                                  className="object-cover"
+                                  referrerPolicy="no-referrer"
+                                />
+                                <div className="absolute top-2 right-2 bg-yellow-400 text-black font-black text-[9px] px-2 py-0.5 rounded-full shadow">
+                                  LIVRE
+                                </div>
+                              </div>
+                              <div className="p-3 space-y-1">
+                                <h3 className="font-bold text-white text-sm truncate group-hover:text-yellow-400 transition-colors">
+                                  {movie.title}
+                                </h3>
+                                <p className="text-[11px] text-slate-300 line-clamp-2 leading-relaxed">
+                                  {movie.description}
+                                </p>
+                                <div className="flex items-center justify-between text-[10px] text-yellow-300 font-semibold pt-1">
+                                  <span>⭐ {movie.match}</span>
+                                  <span>⏱️ {movie.duration}</span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
                 </div>
               ) : (
                 <>
