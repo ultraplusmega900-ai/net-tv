@@ -18,7 +18,8 @@ import {
   History, 
   AlertCircle, 
   Sparkles,
-  HelpCircle
+  HelpCircle,
+  Camera
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '@/lib/supabase';
@@ -88,6 +89,35 @@ export default function NetflixReplica() {
   const [kidsFeedback, setKidsFeedback] = useState<'correct' | 'incorrect' | null>(null);
   const [kidsUnlockedBadges, setKidsUnlockedBadges] = useState<string[]>([]);
 
+  // Google Veo 3 AI Showcase State
+  const [veoMovieIndex, setVeoMovieIndex] = useState(0);
+  const [veoState, setVeoState] = useState<'grid' | 'entering' | 'playing' | 'exiting'>('grid');
+
+  // Veo 3 Demo Movies with real trailers on YouTube (NetMovies distributed)
+  const veoMovies = [
+    {
+      id: 'z-vS9eFvF-U',
+      title: 'Perseguição Implacável',
+      description: 'Um thriller de ação eletrizante que prende a atenção do início ao fim.',
+      thumbnail: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=600&q=80',
+      tag: 'Ação Imparável'
+    },
+    {
+      id: 'H8n3Xp8U9Ww',
+      title: 'Loucuras de Férias',
+      description: 'Uma comédia super divertida para dar gargalhadas com toda a família.',
+      thumbnail: 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=600&q=80',
+      tag: 'Comédia Hilaritante'
+    },
+    {
+      id: 'S9wXp_L4f2Y',
+      title: 'Amor em Paris',
+      description: 'Uma linda história romântica na cidade luz sob o olhar da câmera poética.',
+      thumbnail: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=600&q=80',
+      tag: 'Romance Emocionante'
+    }
+  ];
+
   // Kids Trivia Questions
   const kidsTriviaQuestions = [
     {
@@ -122,13 +152,14 @@ export default function NetflixReplica() {
     }
   ];
 
-  // Profile List
-  const profilesList = [
+  // Profile List state - allow custom profile uploads by the user
+  const [profiles, setProfiles] = useState([
     { name: 'Patrono', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80', color: 'border-red-600 bg-red-900/30', label: 'Patrono' },
     { name: 'Mãe', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80', color: 'border-pink-600 bg-pink-900/30', label: 'Adulto' },
     { name: 'Filho', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80', color: 'border-green-600 bg-green-900/30', label: 'Adulto' },
-    { name: 'Kids', avatar: '/kids_avatar.jpg', color: 'border-yellow-500 bg-yellow-900/30', label: 'Kids' }
-  ];
+    { name: 'Kids', avatar: '/kids_avatar.jpg', color: 'border-yellow-500 bg-yellow-900/30', label: 'Kids' },
+    { name: 'Gormiti Eng', avatar: '/gormiti_avatar.jpg', color: 'border-cyan-500 bg-cyan-900/30', label: 'English' }
+  ]);
 
   // FAQ list for Landing Page
   const faqList = [
@@ -517,13 +548,13 @@ export default function NetflixReplica() {
       
       {/* 1. LANDING PAGE VIEW */}
       {view === 'landing' && (
-        <div id="landing-container" className="relative min-h-screen w-full flex flex-col bg-cover bg-center" style={{ backgroundImage: `linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0.85) 100%), url('https://images.unsplash.com/photo-1574375927938-d5a98e8edd86?auto=format&fit=crop&w=1920&q=80')` }}>
+        <div id="landing-container" className="relative min-h-screen w-full flex flex-col bg-cover bg-center" style={{ backgroundImage: `linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0.85) 100%), url('/netmovies_landing_bg.jpg')` }}>
           
           {/* Header */}
           <header id="landing-header" className="w-full flex items-center justify-between px-6 py-5 md:px-16 max-w-7xl mx-auto z-20">
             <div id="logo-container" className="flex items-center">
-              <span className="text-3xl md:text-4xl font-black text-[#E50914] tracking-tighter">NETFLIX</span>
-              <span className="ml-1 text-[10px] bg-red-600 px-1 rounded font-mono font-semibold tracking-widest text-white">REPLICA</span>
+              <span className="text-2xl md:text-3xl font-black text-[#E50914] tracking-tighter">NET MOVIES</span>
+              <span className="ml-1 text-[8px] md:text-[10px] bg-red-600 px-1 rounded font-mono font-semibold tracking-widest text-white">REPLICA</span>
             </div>
             
             <button 
@@ -600,11 +631,187 @@ export default function NetflixReplica() {
               <div>
                 <h4 className="font-bold text-red-500 flex items-center gap-1">
                   <Sparkles className="w-4 h-4 text-yellow-500" />
-                  Filmes Grátis via NetMovies
+                  Filmes Grátis via Net Movies
                 </h4>
                 <p className="text-xs text-gray-300 mt-1">
-                  Esta réplica está configurada com uma chave API real para carregar o catálogo do canal NetMovies diretamente na sua tela!
+                  Esta réplica está configurada com uma chave API real para carregar o catálogo do canal Net Movies diretamente na sua tela!
                 </p>
+              </div>
+            </div>
+
+            {/* GOOGLE VEO 3 ANIMATED CINEMA REEL */}
+            <div className="w-full mt-16 max-w-4xl bg-gradient-to-b from-neutral-900 via-neutral-900 to-black rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl text-left relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-yellow-500/10 text-yellow-400 text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-bl-xl border-l border-b border-white/5">
+                Google Veo 3 AI Engine
+              </div>
+              
+              <div className="flex items-center gap-2 mb-3">
+                <span className="p-1.5 bg-yellow-500/20 text-yellow-400 rounded-lg">
+                  <Sparkles className="w-5 h-5 animate-pulse" />
+                </span>
+                <h3 className="text-xl md:text-2xl font-black text-white tracking-tight uppercase">
+                  Veo 3 AI Cinema Reel Showcase
+                </h3>
+              </div>
+              <p className="text-xs md:text-sm text-gray-400 leading-relaxed mb-6">
+                Veja o poder do <strong className="text-yellow-400">Google Veo 3</strong> animando e transitando inteligentemente por cenas cinematográficas! A IA entra na cena de um filme (Zoom-In), reproduz seu trailer oficial do YouTube em alta definição, e então se afasta (Zoom-Out) para viajar até o próximo filme.
+              </p>
+
+              {/* Showcase Container */}
+              <div className="relative min-h-[300px] md:min-h-[400px] bg-black/60 rounded-xl border border-white/5 overflow-hidden flex flex-col justify-between">
+                
+                {/* 1. GRID STATE */}
+                {veoState === 'grid' && (
+                  <div className="p-6 flex-grow flex flex-col justify-between h-full">
+                    <div>
+                      <p className="text-xs text-yellow-400 font-bold uppercase tracking-wider mb-4">Escolha um filme para iniciar a simulação do Veo 3:</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        {veoMovies.map((vm, idx) => (
+                          <div 
+                            key={idx}
+                            onClick={() => {
+                              setVeoMovieIndex(idx);
+                              setVeoState('entering');
+                              setTimeout(() => {
+                                setVeoState('playing');
+                              }, 1300);
+                            }}
+                            className="bg-neutral-900 hover:bg-neutral-800 rounded-xl border border-white/5 overflow-hidden cursor-pointer group transition duration-300 transform hover:scale-[1.03] shadow-lg"
+                          >
+                            <div className="relative aspect-video">
+                              <img 
+                                src={vm.thumbnail} 
+                                alt={vm.title} 
+                                className="object-cover w-full h-full"
+                                referrerPolicy="no-referrer"
+                              />
+                              <div className="absolute top-2 right-2 bg-yellow-400 text-black text-[9px] font-bold px-1.5 py-0.5 rounded uppercase">
+                                {vm.tag}
+                              </div>
+                            </div>
+                            <div className="p-3">
+                              <h4 className="font-bold text-white text-sm group-hover:text-yellow-400 transition-colors">{vm.title}</h4>
+                              <p className="text-[11px] text-gray-400 line-clamp-2 mt-1">{vm.description}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="mt-6 flex justify-center">
+                      <button
+                        onClick={() => {
+                          setVeoState('entering');
+                          setTimeout(() => {
+                            setVeoState('playing');
+                          }, 1300);
+                        }}
+                        className="bg-yellow-400 hover:bg-yellow-500 text-neutral-900 font-black px-6 py-3 rounded-full text-xs uppercase tracking-wider transition duration-200 cursor-pointer flex items-center gap-2 shadow-lg hover:scale-105"
+                      >
+                        🚀 Iniciar Tour Automático de Cinema (Veo 3)
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. ENTERING STATE (ZOOM-IN ANIMATION) */}
+                {veoState === 'entering' && (
+                  <div className="absolute inset-0 flex flex-col justify-center items-center bg-black z-40 overflow-hidden">
+                    <motion.div
+                      initial={{ scale: 0.8, opacity: 0, filter: 'blur(10px)' }}
+                      animate={{ scale: 1.4, opacity: 1, filter: 'blur(0px)' }}
+                      transition={{ duration: 1.2, ease: 'easeInOut' }}
+                      className="text-center space-y-4 p-4"
+                    >
+                      <div className="relative w-72 max-w-full h-40 rounded-lg overflow-hidden shadow-2xl border-2 border-yellow-400 mx-auto">
+                        <img 
+                          src={veoMovies[veoMovieIndex].thumbnail} 
+                          alt={veoMovies[veoMovieIndex].title} 
+                          className="object-cover w-full h-full"
+                          referrerPolicy="no-referrer"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                      </div>
+                      <p className="text-yellow-400 font-mono text-xs uppercase tracking-widest animate-pulse">
+                        Google Veo 3: Entrando na cena de &ldquo;{veoMovies[veoMovieIndex].title}&rdquo;...
+                      </p>
+                    </motion.div>
+                  </div>
+                )}
+
+                {/* 3. PLAYING STATE (YOUTUBE EMBED) */}
+                {veoState === 'playing' && (
+                  <div className="relative flex-grow flex flex-col h-full bg-black">
+                    <div className="flex-grow relative aspect-video w-full bg-black">
+                      <iframe
+                        src={`https://www.youtube.com/embed/${veoMovies[veoMovieIndex].id}?autoplay=1&mute=0&rel=0`}
+                        title={`Veo 3 Cinema Reel: ${veoMovies[veoMovieIndex].title}`}
+                        className="absolute inset-0 w-full h-full"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                    <div className="bg-neutral-950 p-4 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                      <div>
+                        <h4 className="font-bold text-white text-sm">{veoMovies[veoMovieIndex].title}</h4>
+                        <p className="text-gray-400 text-[11px]">{veoMovies[veoMovieIndex].description}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => {
+                            setVeoState('exiting');
+                            setTimeout(() => {
+                              const nextIdx = (veoMovieIndex + 1) % veoMovies.length;
+                              setVeoMovieIndex(nextIdx);
+                              setVeoState('entering');
+                              setTimeout(() => {
+                                setVeoState('playing');
+                              }, 1300);
+                            }, 1000);
+                          }}
+                          className="bg-yellow-400 hover:bg-yellow-500 text-neutral-900 font-bold px-4 py-2 rounded-full uppercase tracking-wider transition-all duration-200 cursor-pointer"
+                        >
+                          Próximo Filme ➔
+                        </button>
+                        <button
+                          onClick={() => {
+                            setVeoState('exiting');
+                            setTimeout(() => {
+                              setVeoState('grid');
+                            }, 1000);
+                          }}
+                          className="bg-neutral-800 hover:bg-neutral-700 text-white font-semibold px-4 py-2 rounded-full uppercase tracking-wider transition-all duration-200 cursor-pointer"
+                        >
+                          Sair da Cena ✕
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 4. EXITING STATE (ZOOM-OUT ANIMATION) */}
+                {veoState === 'exiting' && (
+                  <div className="absolute inset-0 flex flex-col justify-center items-center bg-black z-40 overflow-hidden">
+                    <motion.div
+                      initial={{ scale: 1.4, opacity: 1 }}
+                      animate={{ scale: 0.7, opacity: 0, filter: 'blur(15px)' }}
+                      transition={{ duration: 1.0, ease: 'easeInOut' }}
+                      className="text-center space-y-4 p-4"
+                    >
+                      <div className="relative w-72 max-w-full h-40 rounded-lg overflow-hidden shadow-2xl border border-white/10 mx-auto">
+                        <img 
+                          src={veoMovies[veoMovieIndex].thumbnail} 
+                          alt={veoMovies[veoMovieIndex].title} 
+                          className="object-cover w-full h-full"
+                          referrerPolicy="no-referrer"
+                        />
+                      </div>
+                      <p className="text-gray-400 font-mono text-xs uppercase tracking-widest animate-pulse">
+                        Google Veo 3: Afastando câmera (Zoom-Out)...
+                      </p>
+                    </motion.div>
+                  </div>
+                )}
+
               </div>
             </div>
           </main>
@@ -646,10 +853,17 @@ export default function NetflixReplica() {
                 <a href="#" className="hover:underline">Privacidade</a>
                 <a href="#" className="hover:underline">Preferências de cookies</a>
                 <a href="#" className="hover:underline">Informações corporativas</a>
-                <a href="#" className="hover:underline">Originais Netflix</a>
+                <a href="#" className="hover:underline">Originais Net Movies</a>
                 <a href="#" className="hover:underline">Canal NetMovies</a>
               </div>
-              <p className="mt-8 text-xs">Replica da Interface da Netflix - Construído com amor para demonstração técnica.</p>
+              <div className="mt-8 pt-6 border-t border-neutral-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+                <p className="text-neutral-500">
+                  © 2026 Net Movies. Todos os direitos reservados.
+                </p>
+                <p className="text-neutral-600 font-mono">
+                  Sessão protegida por criptografia de dados • Catálogo oficial NetMovies via YouTube.
+                </p>
+              </div>
             </div>
           </footer>
         </div>
@@ -658,13 +872,13 @@ export default function NetflixReplica() {
 
       {/* 2. LOGIN / CADASTRO VIEW */}
       {view === 'login' && (
-        <div id="login-container" className="relative min-h-screen w-full flex flex-col bg-cover bg-center" style={{ backgroundImage: `linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0.85) 100%), url('https://images.unsplash.com/photo-1574375927938-d5a98e8edd86?auto=format&fit=crop&w=1920&q=80')` }}>
+        <div id="login-container" className="relative min-h-screen w-full flex flex-col bg-cover bg-center" style={{ backgroundImage: `linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0.85) 100%), url('/netmovies_landing_bg.jpg')` }}>
           
           {/* Header */}
           <header className="w-full px-6 py-5 md:px-16 max-w-7xl mx-auto z-20">
             <div onClick={() => setView('landing')} className="flex items-center cursor-pointer max-w-fit">
-              <span className="text-3xl md:text-4xl font-black text-[#E50914] tracking-tighter">NETFLIX</span>
-              <span className="ml-1 text-[10px] bg-red-600 px-1 rounded font-mono font-semibold tracking-widest text-white">REPLICA</span>
+              <span className="text-2xl md:text-3xl font-black text-[#E50914] tracking-tighter">NET MOVIES</span>
+              <span className="ml-1 text-[8px] md:text-[10px] bg-red-600 px-1 rounded font-mono font-semibold tracking-widest text-white">REPLICA</span>
             </div>
           </header>
 
@@ -788,8 +1002,8 @@ export default function NetflixReplica() {
             <h1 className="text-3xl md:text-5xl font-semibold tracking-wide mb-2 text-white">Quem está assistindo?</h1>
             <p className="text-gray-400 text-sm mb-10">Selecione seu perfil personalizado para carregar seu catálogo do NetMovies</p>
             
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-10 mt-10">
-              {profilesList.map((profile, idx) => (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6 md:gap-10 mt-10">
+              {profiles.map((profile, idx) => (
                 <motion.div 
                   key={idx}
                   whileHover={{ scale: 1.05 }}
@@ -809,10 +1023,43 @@ export default function NetflixReplica() {
                     {/* Visual label ribbon directly on the avatar */}
                     <div className={`absolute top-2 left-2 px-1.5 py-0.5 text-[8px] md:text-[9px] font-extrabold rounded uppercase tracking-wider shadow-md ${
                       profile.label === 'Patrono' ? 'bg-red-600 text-white border border-red-500' :
-                      profile.label === 'Kids' ? 'bg-yellow-400 text-neutral-900 font-black' : 'bg-zinc-800 text-zinc-300'
+                      profile.label === 'Kids' ? 'bg-yellow-400 text-neutral-900 font-black' : 
+                      profile.label === 'English' ? 'bg-cyan-500 text-neutral-900 font-bold' : 'bg-zinc-800 text-zinc-300'
                     }`}>
                       {profile.label}
                     </div>
+
+                    {/* Interactive Camera Image Upload Overlay */}
+                    <label 
+                      className="absolute bottom-1 right-1 bg-black/80 hover:bg-red-600 text-white p-1.5 rounded-full cursor-pointer z-30 shadow-md border border-white/20 transition-all hover:scale-110"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Camera className="w-3.5 h-3.5" />
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              const base64 = reader.result as string;
+                              setProfiles(prev => prev.map(p => {
+                                if (p.name === profile.name) {
+                                  return { ...p, avatar: base64 };
+                                }
+                                return p;
+                              }));
+                              if (selectedProfile?.name === profile.name) {
+                                setSelectedProfile(prev => prev ? { ...prev, avatar: base64 } : null);
+                              }
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      />
+                    </label>
                   </div>
                   
                   {/* Name of profile is clearly displayed underneath */}
@@ -822,7 +1069,7 @@ export default function NetflixReplica() {
                   
                   {/* Secondary descriptive name label */}
                   <span className="text-[10px] text-gray-500 group-hover:text-gray-300 font-mono mt-0.5 uppercase tracking-widest">
-                    {profile.label === 'Patrono' ? 'Dono da Conta' : profile.label === 'Kids' ? 'Área Segura' : 'Perfil Adulto'}
+                    {profile.label === 'Patrono' ? 'Dono da Conta' : profile.label === 'Kids' ? 'Área Segura' : profile.label === 'English' ? 'Animated Drawings' : 'Perfil Adulto'}
                   </span>
                 </motion.div>
               ))}
@@ -971,9 +1218,38 @@ export default function NetflixReplica() {
 
           {/* MAIN PAGE BODY */}
           {moviesLoading ? (
-            <div className="flex-grow flex flex-col justify-center items-center py-40 gap-3">
-              <div className="w-12 h-12 border-4 border-[#E50914] border-t-transparent rounded-full animate-spin"></div>
-              <p className="text-gray-400 text-sm animate-pulse">Carregando catálogo do NetMovies...</p>
+            <div className="px-6 md:px-14 py-8 space-y-12 animate-pulse">
+              {/* Fake Hero Banner Skeleton */}
+              <div className="w-full h-48 md:h-80 bg-neutral-800/60 rounded-3xl mb-12 flex flex-col justify-end p-6 md:p-12 gap-3">
+                <div className="h-8 w-2/3 md:w-1/3 bg-neutral-700/80 rounded-lg"></div>
+                <div className="h-4 w-full md:w-1/2 bg-neutral-700/60 rounded"></div>
+                <div className="h-10 w-28 bg-neutral-700/90 rounded-full mt-4"></div>
+              </div>
+
+              {/* Fake Row 1 Skeleton */}
+              <div className="space-y-4">
+                <div className="h-6 w-48 bg-neutral-800/80 rounded-lg"></div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="aspect-video bg-neutral-800/50 rounded-2xl border border-white/5"></div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Fake Row 2 Skeleton */}
+              <div className="space-y-4">
+                <div className="h-6 w-32 bg-neutral-800/80 rounded-lg"></div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="aspect-video bg-neutral-800/50 rounded-2xl border border-white/5"></div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col items-center justify-center py-10 gap-2">
+                <span className="w-6 h-6 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></span>
+                <p className="text-xs text-neutral-400 font-mono tracking-widest uppercase animate-pulse">Sincronizando Net Movies...</p>
+              </div>
             </div>
           ) : (
             <div id="browse-content">
@@ -1581,6 +1857,20 @@ export default function NetflixReplica() {
                         </div>
                       </div>
                     )}
+
+                    {/* Browse Page Premium Footer with copyright details */}
+                    <footer className="mt-20 border-t border-neutral-900 pt-8 pb-12 text-center text-neutral-500 text-xs space-y-3">
+                      <div className="flex justify-center gap-6 text-sm mb-4">
+                        <a href="#" className="hover:text-white transition">Início</a>
+                        <a href="#" className="hover:text-white transition">Filmes</a>
+                        <a href="#" className="hover:text-white transition">Séries</a>
+                        <a href="#" className="hover:text-white transition">Minha Lista</a>
+                      </div>
+                      <p>© 2026 Net Movies. Todos os direitos reservados.</p>
+                      <p className="text-neutral-600 max-w-xl mx-auto leading-relaxed">
+                        Esta plataforma é uma réplica de alta fidelidade desenvolvida com as mais recentes tecnologias de front-end. O conteúdo de vídeo exibido é distribuído oficialmente de forma gratuita pelo canal oficial NetMovies no YouTube.
+                      </p>
+                    </footer>
                   </div>
                 </>
               )}
@@ -1759,7 +2049,7 @@ export default function NetflixReplica() {
         id={`movie-card-${movie.id}`}
         whileHover={{ scale: 1.08, zIndex: 10 }}
         transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-        className="flex-shrink-0 w-40 sm:w-52 md:w-64 bg-neutral-900 rounded overflow-hidden shadow-lg select-none relative group/card cursor-pointer"
+        className="flex-shrink-0 w-40 sm:w-52 md:w-64 bg-neutral-900 rounded-2xl overflow-hidden shadow-2xl border border-white/5 select-none relative group/card cursor-pointer"
       >
         {/* Poster Image */}
         <div 
